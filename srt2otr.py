@@ -84,7 +84,7 @@ def gen_report(parsed):
             # pause
             pause = str(p)[2:str(p).rfind('.')]
 
-            out.append(f"{pause} starting at: {time_stamp}")
+            out.append(f"{pause} <i>at:</i> {time_stamp}")
         pauses[k] = out
 
     for k, v in spoken_total.items():
@@ -99,9 +99,9 @@ def gen_report(parsed):
         out.append(f"{spok} — {spoken_percent[name]}:\t{name}")
     out.append('')
 
-    out.append(f'<b>Total pause time:</b> {total_pause}')
-
     out.append('<b>Significant Pauses:</b>')
+    out.append(f'<i>Total pause time:</i> {total_pause}')
+
     for names, p in pauses.items():
         out.append(f'<i>{names}</i>')
         for span in p:
@@ -129,7 +129,7 @@ def gen_otr_transcript(parsed):
         utterance = f"<span>&nbsp;{time_stamp}&nbsp;&nbsp;&nbsp;&nbsp;" \
                     f'{talk}</span>\n'
         if utt['speaker'] != speaker:
-            utterance = f"<br /><br />#<b>{utt['speaker']}</b>#" + utterance
+            utterance = f"<br /><br />—<b>{utt['speaker']}</b>—" + utterance
             speaker = utt['speaker']
         out.append(utterance)
     return ''.join(out)
