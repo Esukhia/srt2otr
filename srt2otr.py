@@ -119,7 +119,7 @@ def gen_otr_transcript(parsed):
     for num, utt in parsed.items():
         s = utt['start']
         start = timedelta(hours=s.hour, minutes=s.minute, seconds=s.second, microseconds=s.microsecond).total_seconds()
-        formatted = str(s)[:str(s).rfind('.')]
+        formatted = s.strftime('%H:%M:%S')
         if formatted.startswith('00:'):
             formatted = formatted[3:]
         time_stamp = f'<span class="timestamp" data-timestamp="{start}">{formatted}</span>'
