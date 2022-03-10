@@ -35,7 +35,7 @@ def parse_srt(in_file):
 
 
 def gen_report(parsed):
-    significant_pause = 15
+    significant_pause = 20
 
     def find_long_pauses():
         treshold = timedelta(seconds=significant_pause)
@@ -94,16 +94,16 @@ def gen_report(parsed):
         spoken_percent[k] = f'{v}%'
 
     out = []
-    out.append('Total Speaking Time:')
+    out.append('<b>Total Speaking Time:</b>')
     for name, spok in spoken_total.items():
         out.append(f"{spok} — {spoken_percent[name]}:\t{name}")
     out.append('')
 
-    out.append(f'Total pause time: {total_pause}')
+    out.append(f'<b>Total pause time:</b> {total_pause}')
 
-    out.append('Significant Pauses:')
+    out.append('<b>Significant Pauses:</b>')
     for names, p in pauses.items():
-        out.append(names)
+        out.append(f'<i>{names}</i>')
         for span in p:
             out.append(f'\t{span}')
     out.append('')
