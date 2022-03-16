@@ -112,7 +112,7 @@ def gen_report(parsed):
     return out
 
 
-def gen_otr_transcript(parsed):
+def gen_blanked_otr_transcript(parsed):
     # <span class=\"timestamp\" data-timestamp=\"seconds.decimals\">minutes:seconds</span>
     out = []
     speaker = ''
@@ -135,19 +135,48 @@ def gen_otr_transcript(parsed):
     return ''.join(out)
 
 
-def convert_srt2otr(in_file):
+def gen_otr_transcript(parsed):
+    # <span class=\"timestamp\" data-timestamp=\"seconds.decimals\">minutes:seconds</span>
+    out = []
+    for num, utt in parsed.items():
+        s = utt['start']
+        start = timedelta(hours=s.hour, minutes=s.minute, seconds=s.second, microseconds=s.microsecond).total_seconds()
+        formatted = s.strftime('%H:%M:%S')
+        if formatted.startswith('00:'):
+            formatted = formatted[3:]
+        time_stamp = f'<span class="timestamp" data-timestamp="{start}">{formatted}</span>'
+
+        talk = utt['speaker'] + utt['utt']
+        utterance = f"<span>&nbsp;{time_stamp}&nbsp;" \
+                    f'{talk}</span>\n'
+        out.append(utterance)
+    return ''.join(out)
+
+
+def convert_srt2otr(in_file, blank=True, report=True, url=None):
+    if not url:
+        url = ''
     parsed = parse_srt(in_file)
-    report = gen_report(parsed)
-    report = report.replace('\n', '<br />').replace('\t', '&nbsp;&nbsp;&nbsp;&nbsp;')
-    otr_transcript = gen_otr_transcript(parsed)
+    report_text = ''
+    if report:
+        report_text = gen_report(parsed)
+        report_text = report_text.replace('\n', '<br />').replace('\t', '&nbsp;&nbsp;&nbsp;&nbsp;')
+    if blank:
+        otr_transcript = gen_blanked_otr_transcript(parsed)
+    else:
+        otr_transcript = gen_otr_transcript(parsed)
+
     otr_transcript = otr_transcript.replace('\n', '')
-    total = f"<p>{report}</p><br /><p>{otr_transcript}</p>".replace('"', '\\"')
-    otr = '{"text": "' + total + '", "media": "", "media-time":0.0}'
-    otr_file = in_file.parent / (in_file.stem + '.otr')
+    total = f"<p>{report_text}</p><br /><p>{otr_transcript}</p>".replace('"', '\\"')
+    otr = '{"text": "' + total + '", "media": "' + url + '", "media-time":0.0}'
+    f_name = f'{in_file.stem}_blank.otr' if blank else f'{in_file.stem}.otr'
+    otr_file = in_file.parent / f_name
     otr_file.write_text(otr)
 
 
 if __name__ == '__main__':
+    blank, report = False, False
     in_path = Path('content')
+    url = 'www.youtube.com/watch?v=zVO_h74WK3M'
     for f in in_path.glob('*.srt'):
-        convert_srt2otr(f)
+        convert_srt2otr(f, blank=blank, report=report)
