@@ -1,15 +1,32 @@
+# 1. export youtube audio by adding "pi" youtubepi.com
+# 2. detect turntaking with otter.ai and export srt files
+# 3. create a folder named srt2otr next to the script
+# 4. add srt files to the folder
+# 5. run script
+# Note: don't rename files till the end!
+
 from collections import defaultdict
+from mimetypes import encodings_map
 from pathlib import Path
+import inspect
+import os
 from datetime import time, timedelta
+from tarfile import ENCODING
 
 
 def parse_srt(in_file):
-    dump = in_file.read_text().strip()
+    dump = in_file.read_text(encoding="utf-8").strip()
     utts = {}
     speaker = ''
     previous_end = None
     for u in dump.split('\n\n'):
-        num, timestamp, utt = u.split('\n')
+        # detect export format error
+        try:
+            num, timestamp, utt = u.split('\n')
+        except ValueError:
+            print("FILE FORMAT ERROR! Please unselect \"Add line breaks automatically\" in otter.ai and export again.")
+            exit()
+
         # utterance number
         num = int(num)
 
@@ -171,12 +188,24 @@ def convert_srt2otr(in_file, blank=True, report=True, url=None):
     otr = '{"text": "' + total + '", "media": "' + url + '", "media-time":0.0}'
     f_name = f'{in_file.stem}_blank.otr' if blank else f'{in_file.stem}.otr'
     otr_file = in_file.parent / f_name
-    otr_file.write_text(otr)
+    otr_file.write_text(otr, encoding="utf-8")
+
+def getpath():
+    # gets script path so script can be run from anywhere
+    filename = inspect.getframeinfo(inspect.currentframe()).filename
+    path = os.path.dirname(os.path.abspath(filename))
+    return path
+
+# TODO
+def get_ytid(file_name):
+    # get YouTube Video ID
+    ytid = file_name
+    return ytid
 
 
 if __name__ == '__main__':
     blank, report = False, False
-    in_path = Path('content')
+    in_path = Path(getpath()) / 'srt2otr'
     url = 'www.youtube.com/watch?v=zVO_h74WK3M'
     for f in in_path.glob('*.srt'):
         convert_srt2otr(f, blank=blank, report=report)
