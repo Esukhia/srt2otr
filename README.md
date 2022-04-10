@@ -1,24 +1,15 @@
 # srt2otr
-convert srt files to otr
 
+1.  Export youtube audio by adding "pi" youtubepi.com
 
-.otr file format:
+![how to quickly download youtube video to mp4 and mp3 formats](https://y2mate.is/assets/images/quick-download-tip.png)
 
-```
-{
-    "text": "<transcript with timecodes>",
-    "media": "<audio/video file>",
-    "media-time": <last timecode>
- }
-```
+2\. Detect turn taking with otter.ai and export srt files
 
-`media` and `media-time` are optional.
+3\. Create a folder named srt2otr next to the script
 
-The transcript is html.
+4\. Add srt files to the folder
 
-Timecode format:
+5\. Run script
 
-```
-<span class=\"timestamp\" data-timestamp=\"seconds.decimals\">minutes:seconds</span>
-```
-
+Note: don't rename files till the end!
