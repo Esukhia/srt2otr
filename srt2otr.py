@@ -10,6 +10,7 @@ from mimetypes import encodings_map
 from pathlib import Path
 import inspect
 import os
+import re
 from datetime import time, timedelta
 from tarfile import ENCODING
 
@@ -170,9 +171,11 @@ def gen_otr_transcript(parsed):
     return ''.join(out)
 
 
-def convert_srt2otr(in_file, blank=True, report=True, url=None):
-    if not url:
-        url = ''
+def convert_srt2otr(in_file, blank=True, report=True, url=True):
+    if url:
+        yt_url = get_ytlink(in_file)
+    else:
+        yt_url = ''
     parsed = parse_srt(in_file)
     report_text = ''
     if report:
@@ -184,9 +187,11 @@ def convert_srt2otr(in_file, blank=True, report=True, url=None):
         otr_transcript = gen_otr_transcript(parsed)
 
     otr_transcript = otr_transcript.replace('\n', '')
-    total = f"<p>{report_text}</p><br /><p>{otr_transcript}</p>".replace('"', '\\"')
-    otr = '{"text": "' + total + '", "media": "' + url + '", "media-time":0.0}'
-    f_name = f'{in_file.stem}_blank.otr' if blank else f'{in_file.stem}.otr'
+    # File content creation
+    total = f"<p>{yt_url}</p><br /><p>{report_text}</p><br /><p>{otr_transcript}</p>".replace('"', '\\"')
+    otr = '{"text": "' + total + '", "media": "' + yt_url + '", "media-time":0.0}'
+    # f_name = f'{in_file.stem}_blank.otr' if blank else f'{in_file.stem}.otr'
+    f_name = f'{in_file.stem}.otr'
     otr_file = in_file.parent / f_name
     otr_file.write_text(otr, encoding="utf-8")
 
@@ -196,16 +201,21 @@ def getpath():
     path = os.path.dirname(os.path.abspath(filename))
     return path
 
-# TODO
-def get_ytid(file_name):
-    # get YouTube Video ID
-    ytid = file_name
-    return ytid
+def get_ytlink(path):
+    # Example: "Y2Mate.is - Vintage French Minimal Synthpop (1980)-y-3sPFSfSd8-160k-1649033289488_otter_ai.srt"
+    try:
+        ytid = re.search("-([a-zA-Z0-9_-]{11})-\d+k-", path.name).group(1)
+        ytlink = f"https://www.youtube.com/watch?v={ytid}"
+        print(ytlink)
+    except:
+        ytlink = "Use Y2Mate.is and otter.ai to get the YouTube link."
+    return ytlink
 
 
 if __name__ == '__main__':
-    blank, report = False, False
+    # report: header report
+    # blank: all text replaced by "░"
+    url, report, blank = True, True, True
     in_path = Path(getpath()) / 'srt2otr'
-    url = 'www.youtube.com/watch?v=zVO_h74WK3M'
     for f in in_path.glob('*.srt'):
         convert_srt2otr(f, blank=blank, report=report)
